@@ -57,3 +57,39 @@ resource "aws_internet_gateway" "dev_proj-1_public_internet_gateway"{
     Name = "dev-proj-1-igw"
   }
 }
+
+
+#Setup Public Route table
+resource "aws_route_table" "dev_proj_1_public_route_table" {
+  vpc_id = aws_vpc.dev_proj_1_eu_central_1.id
+  route {
+    cidr_block = "0.0.0.0/0" #Anyone in the internet can access
+    gateway_id = aws_internet_gateway.dev_proj-1_public_internet_gateway.id
+  }
+  tags = {
+    Name = "dev-proj-1-public_rt"
+  }
+}
+
+#Public Route table and Public subnet association
+resource "aws_route_table_association" "dev_proj_1_public_rt_subnet_association" {
+  count = length(aws_subnet.dev_proj_1_public_subnet)
+  subnet_id = aws_subnet.dev_proj_1_public_subnet[count.index].id
+  route_table_id = aws_route_table.dev_proj_1_public_route_table.id
+}
+
+#Setup private route table (Private subnet)
+resource "aws_route_table" "dev_proj_1_private_route_table" {
+  vpc_id = aws_vpc.dev_proj_1_eu_central_1.id
+  tags = {
+    Name = "dev_proj_1_private_rt"
+  }
+}
+
+#Private Route table and subnet association
+resource "aws_route_table_association" "dev_proj_1_private_rt_subnet_association"{
+  count = length(aws_subnet.dev_proj_1_private_subnet)
+  subnet_id = aws_subnet.dev_proj_1_private_subnet[count.index].id
+  route_table_id = aws_route_table.dev_proj_1_private_route_table.id
+
+}
